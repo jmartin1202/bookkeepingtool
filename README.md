@@ -7,6 +7,7 @@ The first production slice includes:
 - the core database schema and `create_collection_cycle` RPC
 - Supabase email/password signup, login, logout, and auth callback routes
 - automatic organization/profile/trial subscription bootstrap on signup
+- a usable bookkeeper dashboard for clients, checklist templates, and collection links
 - an authenticated cycle creation API route
 - a public client upload portal at `/portal/[token]`
 - signed uploads into a private Supabase Storage bucket
@@ -24,6 +25,8 @@ The first production slice includes:
 - `src/app/auth/callback/route.ts` - Supabase email confirmation callback.
 - `src/middleware.ts` - Supabase SSR session refresh middleware.
 - `src/app/dashboard/page.tsx` - protected dashboard shell.
+- `src/app/dashboard/actions.ts` - server actions for clients, checklist templates, and collection cycles.
+- `src/app/components/dashboard/copy-upload-link-button.tsx` - client-side copy control for portal links.
 - `src/app/api/collection-cycles/route.ts` - authenticated route for creating monthly collection cycles.
 - `src/app/portal/[token]/page.tsx` - public upload portal page.
 - `src/app/components/portal-upload-list.tsx` - client-side file upload workflow.
@@ -123,6 +126,15 @@ Content-Type: application/json
 6. Browser uploads directly to Supabase Storage with the signed URL.
 7. Browser calls `POST /api/public-upload/complete`.
 8. The app records metadata and marks the document request as `uploaded`.
+
+## Dashboard Workflow
+
+After signing in at `/login`, the bookkeeper can use `/dashboard` to:
+
+1. Add an active client.
+2. Create a reusable checklist template from newline-separated checklist items.
+3. Generate a month-end collection link using the client, checklist, month, and due date.
+4. Open or copy the generated `/portal/[token]` link.
 
 ## GitLab Setup
 
