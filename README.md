@@ -8,6 +8,7 @@ The first production slice includes:
 - Supabase email/password signup, login, logout, and auth callback routes
 - automatic organization/profile/trial subscription bootstrap on signup
 - a usable bookkeeper dashboard for clients, checklist templates, and collection links
+- a scheduled reminder route that emails clients with missing due/overdue documents
 - an authenticated cycle creation API route
 - a public client upload portal at `/portal/[token]`
 - signed uploads into a private Supabase Storage bucket
@@ -27,6 +28,10 @@ The first production slice includes:
 - `src/app/dashboard/page.tsx` - protected dashboard shell.
 - `src/app/dashboard/actions.ts` - server actions for clients, checklist templates, and collection cycles.
 - `src/app/components/dashboard/copy-upload-link-button.tsx` - client-side copy control for portal links.
+- `src/app/api/cron/send-reminders/route.ts` - protected scheduled reminder route.
+- `src/lib/reminders/run-reminders.ts` - reminder sweep logic.
+- `src/lib/reminders/email.ts` - Resend email sender.
+- `vercel.json` - daily cron schedule for reminders.
 - `src/app/api/collection-cycles/route.ts` - authenticated route for creating monthly collection cycles.
 - `src/app/portal/[token]/page.tsx` - public upload portal page.
 - `src/app/components/portal-upload-list.tsx` - client-side file upload workflow.
@@ -43,6 +48,10 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 SUPABASE_SERVICE_ROLE_KEY=your_server_only_service_role_key
+CRON_SECRET=generate_a_long_random_secret
+RESEND_API_KEY=re_...
+REMINDER_EMAIL_FROM="Month-End Chaser <documents@yourdomain.com>"
+REMINDER_MIN_HOURS=48
 ```
 
 Later Stripe routes will also need:
@@ -135,6 +144,32 @@ After signing in at `/login`, the bookkeeper can use `/dashboard` to:
 2. Create a reusable checklist template from newline-separated checklist items.
 3. Generate a month-end collection link using the client, checklist, month, and due date.
 4. Open or copy the generated `/portal/[token]` link.
+
+## Reminder Workflow
+
+The scheduled route is:
+
+```http
+GET /api/cron/send-reminders
+Authorization: Bearer $CRON_SECRET
+```
+
+It scans up to 100 open collection cycles whose `due_date` is today or earlier, finds missing/rejected document requests, and sends one email per client when at least one missing item has not been reminded within `REMINDER_MIN_HOURS`.
+
+The Vercel schedule in `vercel.json` runs daily at `14:00 UTC`:
+
+```json
+{
+  "crons": [
+    {
+      "path": "/api/cron/send-reminders",
+      "schedule": "0 14 * * *"
+    }
+  ]
+}
+```
+
+For local testing without a `CRON_SECRET`, the route is allowed in non-production only. In production, set `CRON_SECRET`, `RESEND_API_KEY`, and `REMINDER_EMAIL_FROM`.
 
 ## GitLab Setup
 
