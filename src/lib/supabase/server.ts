@@ -28,7 +28,11 @@ export async function createSupabaseServerClient() {
       ) {
         // Route handlers may refresh auth cookies while processing a request.
         cookiesToSet.forEach(({ name, value, options }) => {
-          cookieStore.set(name, value, options);
+          try {
+            cookieStore.set(name, value, options);
+          } catch {
+            // Server Components cannot write cookies; middleware refreshes them.
+          }
         });
       },
     },

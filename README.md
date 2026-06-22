@@ -5,6 +5,8 @@ GitLab/GitHub-ready Next.js/Supabase scaffold for the bookkeeping document colle
 The first production slice includes:
 
 - the core database schema and `create_collection_cycle` RPC
+- Supabase email/password signup, login, logout, and auth callback routes
+- automatic organization/profile/trial subscription bootstrap on signup
 - an authenticated cycle creation API route
 - a public client upload portal at `/portal/[token]`
 - signed uploads into a private Supabase Storage bucket
@@ -15,6 +17,13 @@ The first production slice includes:
 - `.gitlab-ci.yml` - GitLab pipeline for typecheck and build.
 - `.github/workflows/ci.yml` - GitHub Actions pipeline for typecheck, lint, and build.
 - `supabase/001_init.sql` - relational schema, RLS policies, private storage bucket, and atomic `create_collection_cycle` RPC.
+- `supabase/002_auth_bootstrap.sql` - signup trigger that creates organization/profile/trial rows.
+- `src/app/(auth)/login/page.tsx` - login page.
+- `src/app/(auth)/signup/page.tsx` - signup page.
+- `src/app/auth/actions.ts` - auth server actions.
+- `src/app/auth/callback/route.ts` - Supabase email confirmation callback.
+- `src/middleware.ts` - Supabase SSR session refresh middleware.
+- `src/app/dashboard/page.tsx` - protected dashboard shell.
 - `src/app/api/collection-cycles/route.ts` - authenticated route for creating monthly collection cycles.
 - `src/app/portal/[token]/page.tsx` - public upload portal page.
 - `src/app/components/portal-upload-list.tsx` - client-side file upload workflow.
@@ -40,6 +49,28 @@ STRIPE_SECRET_KEY=sk_test_...
 STRIPE_WEBHOOK_SECRET=whsec_...
 STRIPE_PRICE_MONTHLY_35=price_...
 ```
+
+## Supabase Auth Setup
+
+Run both SQL files in order:
+
+```bash
+supabase/001_init.sql
+supabase/002_auth_bootstrap.sql
+```
+
+In Supabase Auth URL settings, add these redirect URLs:
+
+```bash
+http://localhost:3000/auth/callback
+https://your-production-domain.com/auth/callback
+```
+
+New signups create:
+
+- one `organizations` row
+- one owner `profiles` row
+- one 14-day `trialing` `subscriptions` row
 
 ## Required Packages
 

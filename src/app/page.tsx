@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, LogIn } from "lucide-react";
 
 export default function HomePage() {
   return (
@@ -15,13 +15,22 @@ export default function HomePage() {
           Create a checklist, send one link, and collect every missing document
           in one organized client portal.
         </p>
-        <Link
-          href="/portal/demo-token"
-          className="mt-8 inline-flex items-center gap-2 rounded-md bg-spruce px-5 py-3 text-sm font-semibold text-white shadow-soft transition hover:bg-ink"
-        >
-          View portal route
-          <ArrowRight aria-hidden="true" size={18} />
-        </Link>
+        <div className="mt-8 flex flex-wrap gap-3">
+          <Link
+            href="/signup"
+            className="inline-flex items-center gap-2 rounded-md bg-spruce px-5 py-3 text-sm font-semibold text-white shadow-soft transition hover:bg-ink"
+          >
+            Create workspace
+            <ArrowRight aria-hidden="true" size={18} />
+          </Link>
+          <Link
+            href="/login"
+            className="inline-flex items-center gap-2 rounded-md border border-line bg-white px-5 py-3 text-sm font-semibold text-ink transition hover:border-spruce hover:text-spruce"
+          >
+            Sign in
+            <LogIn aria-hidden="true" size={18} />
+          </Link>
+        </div>
       </div>
     </main>
   );
